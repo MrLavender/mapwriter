@@ -10,3 +10,5 @@ runtime
 .project
 .settings
 bin
+run
+.nb-gradle*

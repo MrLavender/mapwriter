@@ -1,14 +1,5 @@
 package mapwriter.forge;
 
-import java.net.InetSocketAddress;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import mapwriter.Mw;
-import net.minecraft.client.Minecraft;
-import net.minecraftforge.client.event.RenderGameOverlayEvent;
-import net.minecraftforge.common.MinecraftForge;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
@@ -20,6 +11,12 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.common.network.FMLNetworkEvent;
+import java.net.InetSocketAddress;
+import mapwriter.Mw;
+import net.minecraftforge.client.event.RenderGameOverlayEvent;
+import net.minecraftforge.common.MinecraftForge;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Mod(modid="MapWriter", name="MapWriter", version="2.2.0-ML")
 public class MwForge {
@@ -64,14 +61,19 @@ public class MwForge {
     	}
     }
 
-    @SubscribeEvent
-    public void onTick(TickEvent.ClientTickEvent event){
-        if (event.phase == TickEvent.Phase.START){
-        	// run the cleanup code when Mw is loaded and the player becomes null.
-        	// a bit hacky, but simpler than checking if the connection has closed.
-            if ((Mw.instance.ready) && (Minecraft.getMinecraft().thePlayer == null)) {
-                Mw.instance.close();
-            }
-        }
-    }
+	private boolean didDisconnect = false;
+
+	@SubscribeEvent
+	public void onDisconnected(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
+		// Mw.close() must be run on the client thread, not from here
+		didDisconnect = true;
+	}
+
+	@SubscribeEvent
+	public void onTick(TickEvent.ClientTickEvent event) {
+		if (didDisconnect && event.phase == TickEvent.Phase.START && Mw.instance.ready) {
+			didDisconnect = false;
+			Mw.instance.close();
+		}
+	}
 }

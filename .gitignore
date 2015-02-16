@@ -12,3 +12,4 @@ runtime
 bin
 run
 .nb-gradle*
+eclipse

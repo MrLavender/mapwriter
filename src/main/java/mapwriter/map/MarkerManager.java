@@ -2,7 +2,6 @@ package mapwriter.map;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import mapwriter.MwUtil;
 import mapwriter.forge.MwConfig;
 import mapwriter.map.mapmode.MapMode;
@@ -17,11 +16,16 @@ public class MarkerManager {
 	private String visibleGroupName = "none";
 	
 	public Marker selectedMarker = null;
-	
-	public MarkerManager() {
+
+	private final MwConfig config;
+	private final String category;
+
+	public MarkerManager(MwConfig config, String category) {
+		this.config = config;
+		this.category = category;
 	}
 	
-	public void load(MwConfig config, String category) {
+	public void load() {
 		this.markerList.clear();
 		
 		if (config.hasCategory(category)) {
@@ -45,7 +49,7 @@ public class MarkerManager {
 		this.update();
 	}
 	
-	public void save(MwConfig config, String category) {
+	public void save() {
 		config.get(category, "markerCount", 0).set(this.markerList.size());
 		config.get(category, "visibleGroup", "").set(this.visibleGroupName);
 		
@@ -116,6 +120,7 @@ public class MarkerManager {
 	
 	public void addMarker(Marker marker) {
 		this.markerList.add(marker);
+		this.save();
 	}
 	
 	public void addMarker(String name, String groupName, int x, int y, int z, int dimension, int colour) {
